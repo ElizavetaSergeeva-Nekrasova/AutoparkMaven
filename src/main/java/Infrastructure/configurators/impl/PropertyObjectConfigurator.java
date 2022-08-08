@@ -2,11 +2,14 @@ package Infrastructure.configurators.impl;
 
 import Infrastructure.configurators.ObjectConfigurator;
 import Infrastructure.core.Context;
+import Infrastructure.core.annotations.Property;
 import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +33,18 @@ public class PropertyObjectConfigurator implements ObjectConfigurator {
     @SneakyThrows
     @Override
     public void configure(Object object, Context context) {
+        for (Field field: object.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(Property.class)) {
+                String setterName = ConfiguratorUtils.deriveSetterNameFromFieldName(field);
+                Method setterMethod = object.getClass().getMethod(setterName, field.getType());
+                String value = field.getAnnotation(Property.class).value();
 
+                if (properties.containsKey(value)) {
+                    setterMethod.invoke(object, properties.get(value));
+                } else {
+                    setterMethod.invoke(object, properties.get(field.getName()));
+                }
+            }
+        }
     }
 }
