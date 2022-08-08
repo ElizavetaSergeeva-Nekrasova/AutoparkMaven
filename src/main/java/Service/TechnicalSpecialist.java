@@ -6,6 +6,9 @@ import Vehicle.VehicleType;
 public class TechnicalSpecialist {
     public static final int LOWER_LIMIT_MANUFACTURE_YEAR = 1886;
 
+    public TechnicalSpecialist() {
+    }
+
     static public boolean validateManufactureYear(int year) {
         return year >= LOWER_LIMIT_MANUFACTURE_YEAR
                 && year < 9999;

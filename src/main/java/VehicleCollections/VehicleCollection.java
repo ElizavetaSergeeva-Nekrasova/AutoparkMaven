@@ -1,6 +1,8 @@
 package VehicleCollections;
 
 import Comparators.ComparatorByTax;
+import Infrastructure.core.annotations.Autowired;
+import Infrastructure.core.annotations.InitMethod;
 import Parser.RentParser;
 import Parser.VehicleParser;
 import Parser.VehicleTypeParser;
@@ -13,28 +15,41 @@ import java.util.*;
 public class VehicleCollection {
     private List<VehicleType> vehicleTypeList;
     private List<Vehicle> vehicleList;
-    private List<Rent> rentList;
 
-    public VehicleCollection(String types, String vehicles, String rents) {
-        String typesFile = "src/main/resources/" + types + ".csv";
-        String vehiclesFile = "src/main/resources/" + vehicles + ".csv";
-        String rentsFile = "src/main/resources/" + rents + ".csv";
+    @Autowired
+    private VehicleParser vehicleParser;
 
-        vehicleTypeList = VehicleTypeParser.loadTypes(typesFile);
-        rentList = RentParser.loadRents(rentsFile);
-        vehicleList = VehicleParser.loadVehicles(vehiclesFile, vehicleTypeList);
+    public VehicleCollection() {
     }
 
-    public List<Vehicle> getVehicleList() {
-        return vehicleList;
+    @InitMethod
+    public void init() {
+        vehicleList = vehicleParser.loadVehicles();
+        vehicleTypeList = vehicleParser.getVehicleTypeList();
     }
 
     public List<VehicleType> getVehicleTypeList() {
         return vehicleTypeList;
     }
 
-    public List<Rent> getRentList() {
-        return rentList;
+    public void setVehicleTypeList(List<VehicleType> vehicleTypeList) {
+        this.vehicleTypeList = vehicleTypeList;
+    }
+
+    public List<Vehicle> getVehicleList() {
+        return vehicleList;
+    }
+
+    public void setVehicleList(List<Vehicle> vehicleList) {
+        this.vehicleList = vehicleList;
+    }
+
+    public VehicleParser getVehicleParser() {
+        return vehicleParser;
+    }
+
+    public void setVehicleParser(VehicleParser vehicleParser) {
+        this.vehicleParser = vehicleParser;
     }
 
     public void insert(int index, Vehicle v) {

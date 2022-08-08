@@ -1,13 +1,24 @@
 package Parser;
 
 import FileUtils.FileUtils;
+import Infrastructure.core.annotations.InitMethod;
 import Vehicle.VehicleType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class VehicleTypeParser {
-    public static List<VehicleType> loadTypes(String typesFile) {
+    private String typesFile = "src/main/resources/types.csv";
+
+    public VehicleTypeParser() {
+    }
+
+//    @InitMethod
+//    public void init() {
+//        typesFile = "src/main/resources/types.csv";
+//    }
+
+    public List<VehicleType> loadTypes() {
         List<String> list = FileUtils.readInfo(typesFile);
         List<VehicleType> typesList = new ArrayList<>();
 
@@ -18,7 +29,7 @@ public class VehicleTypeParser {
         return typesList;
     }
 
-    private static VehicleType createType(String csvString) {
+    private VehicleType createType(String csvString) {
         String[] fields = ParserStringFormatter.splitLineWithComma(csvString);
 
         VehicleType vehicleType = new VehicleType(

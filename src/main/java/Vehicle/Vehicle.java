@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Vehicle implements Comparable<Vehicle> {
+    private List<Rent> rents;
     private int id;
     private VehicleType vehicleType;
     private String model;
@@ -23,8 +24,9 @@ public class Vehicle implements Comparable<Vehicle> {
     public Vehicle() {
     }
 
-    public Vehicle(int id, VehicleType vehicleType, String model, String stateNumber,
+    public Vehicle(int id, List<Rent> rents, VehicleType vehicleType, String model, String stateNumber,
                    double weight, int year, int mileage, Color color, Startable engine) {
+        this.rents = rents;
         this.id = id;
         this.engine = engine;
         try {
@@ -203,12 +205,9 @@ public class Vehicle implements Comparable<Vehicle> {
 
     public double getTotalIncome(VehicleCollection vehicleCollection) {
         double sum = 0;
-        List<Rent> rentList = vehicleCollection.getRentList();
 
-        for (int i = 0; i < rentList.size(); i++) {
-            if (rentList.get(i).getVehicleId() == id) {
-                sum += rentList.get(i).getCost();
-            }
+        for (int i = 0; i < rents.size(); i++) {
+            sum += rents.get(i).getCost();
         }
 
         return sum;
