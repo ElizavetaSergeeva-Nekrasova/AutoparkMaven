@@ -12,11 +12,6 @@ public class VehicleTypeParser {
     public VehicleTypeParser() {
     }
 
-//    @InitMethod
-//    public void init() {
-//        typesFile = "src/main/resources/types.csv";
-//    }
-
     public List<VehicleType> loadTypes() {
         List<String> list = FileUtils.readInfo(typesFile);
         List<VehicleType> typesList = new ArrayList<>();

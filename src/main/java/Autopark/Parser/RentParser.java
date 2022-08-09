@@ -12,11 +12,6 @@ public class RentParser {
     public RentParser() {
     }
 
-//    @InitMethod
-//    public void init() {
-//        rentsFile = "src/main/resources/rents.csv";
-//    }
-
     public List<Rent> loadRents() {
         List<String> list = FileUtils.readInfo(rentsFile);
         List<Rent> rentsList = new ArrayList<>();
