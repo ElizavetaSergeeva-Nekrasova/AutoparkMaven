@@ -10,11 +10,6 @@ public class TechnicalSpecialist {
     public TechnicalSpecialist() {
     }
 
-    @InitMethod
-    public void init() {
-
-    }
-
     static public boolean validateManufactureYear(int year) {
         return year >= LOWER_LIMIT_MANUFACTURE_YEAR
                 && year < 9999;
