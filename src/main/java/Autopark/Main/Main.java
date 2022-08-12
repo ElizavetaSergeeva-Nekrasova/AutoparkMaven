@@ -1,12 +1,11 @@
 package Autopark.Main;
 
+import Autopark.EntitiesService.TypesService;
+import Autopark.Entity.Types;
 import Autopark.Infrastructure.core.impl.ApplicationContext;
-import Autopark.Infrastructure.orm.ConnectionFactory;
-import Autopark.Infrastructure.orm.service.PostgreDataBaseService;
 import Autopark.Service.BadMechanicService;
 import Autopark.Service.Fixer;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +15,10 @@ public class Main {
         interfaceToImplementation.put(Fixer.class, BadMechanicService.class);
         ApplicationContext applicationContext = new ApplicationContext("Autopark", interfaceToImplementation);
 
-        PostgreDataBaseService postgreDataBaseService = applicationContext.getObject(PostgreDataBaseService.class);
+        TypesService typesService = applicationContext.getObject(TypesService.class);
+        Types type = new Types(Long.valueOf(1), "unknown", 1.2);
+        typesService.save(type);
+        Types typeFromTable = typesService.get(17L);
+        System.out.println(typeFromTable);
     }
 }

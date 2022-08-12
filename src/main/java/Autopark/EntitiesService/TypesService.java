@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -20,14 +21,14 @@ public class TypesService {
     }
 
     public Types get(Long id) {
-        return null;
+        return entityManager.get(id, Types.class).orElse(new Types());
     }
 
     public List<Types> getAll() {
         return null;
     }
 
-    public Long save(Types types) {
-        return null;
+    public void save(Types types) {
+        entityManager.save(types);
     }
 }

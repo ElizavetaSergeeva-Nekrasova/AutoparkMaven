@@ -32,8 +32,8 @@ public class EntityManagerImpl implements EntityManager {
     }
 
     @Override
-    public Long save(Object object) {
-        return dataBaseService.save(object);
+    public void save(Object object) {
+        dataBaseService.save(object);
     }
 
     @Override

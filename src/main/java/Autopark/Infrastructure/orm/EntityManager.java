@@ -5,6 +5,6 @@ import java.util.Optional;
 
 public interface EntityManager {
     <T> Optional<T> get(long id, Class<T> clazz);
-    Long save(Object object);
+    void save(Object object);
     <T> List<T> getAll(Class<T> clazz);
 }

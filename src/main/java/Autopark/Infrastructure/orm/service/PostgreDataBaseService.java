@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -37,22 +38,10 @@ public class PostgreDataBaseService {
     private Map<String, String> insertByClassPattern = new HashMap<>();
 
     private static final String SEQ_NAME = "id_seq";
-    private static final String CHECK_SEQ_SQL_PATTERN =
-            "SELECT EXISTS (\n" +
-                    "SELECT FROM information_schema.sequences \n" +
-                    "WHERE sequence_schema = 'public'\n" +
-                    "AND sequence_name = '%s'\n" +
-                    ");";
     private static final String CREATE_ID_SEQ_PATTERN =
             "CREATE SEQUENCE IF NOT EXISTS %S\n" +
                     "INCREMENT 1\n" +
                     "START 1;";
-    private static final String CHECK_TABLE_SQL_PATTERN =
-            "SELECT EXISTS (\n" +
-                    "SELECT FROM information_schema.tables \n" +
-                    "WHERE table_schema = 'public'\n" +
-                    "AND table_name = '%s'\n" +
-                    ");";
     private static final String CREATE_TABLE_SQL_PATTERN =
             "CREATE TABLE IF NOT EXISTS %s (\n" +
                     "%s integer PRIMARY KEY DEFAULT nextval('%s'), " +
@@ -76,15 +65,8 @@ public class PostgreDataBaseService {
 
         SqlFieldType[] sqlFieldTypes = SqlFieldType.values();
 
-        for (SqlFieldType s:
-             sqlFieldTypes) {
-            classToSql.put(s.getType().getName(), s.getSqlType());
-        }
-
-        for (SqlFieldType s:
-                sqlFieldTypes) {
-            insertPatternByClass.put(s.getType().getName(), s.getInsertPattern());
-        }
+        Arrays.stream(sqlFieldTypes).forEach(x -> classToSql.put(x.getType().getName(), x.getSqlType()));
+        Arrays.stream(sqlFieldTypes).forEach(x -> insertPatternByClass.put(x.getType().getName(), x.getInsertPattern()));
 
         createId_seqIfNotExists();
 
@@ -95,36 +77,18 @@ public class PostgreDataBaseService {
         createTablesIfNotExists(entities);
 
         initializeInsertByClassPattern(entities);
-
-        try {
-            connection.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
-    //return - это заглушка
-    public Long save(Object obj) {
-        Object[] values = getValuesArray(obj);
+    public void save(Object obj) {
+        String valuesLine = getValuesLine(obj);
 
-        String sql = String.format(insertByClassPattern.get(obj.getClass().getName()), values);
+        String sql = String.format(insertByClassPattern.get(obj.getClass().getName()), valuesLine);
 
         try {
-
-            statement.executeUpdate(sql);
+            statement.execute(sql);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        try {
-            statement.close();
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return Long.valueOf(1);
     }
 
     public <T> Optional<T> get(Long id, Class<T> clazz) {
@@ -148,8 +112,6 @@ public class PostgreDataBaseService {
 
         try {
             resultSet.close();
-            statement.close();
-            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -162,40 +124,42 @@ public class PostgreDataBaseService {
         return new ArrayList<>();
     }
 
+    //добавить добавление id
     @SneakyThrows
     private <T> T makeObject(ResultSet resultSet, Class<T> clazz) {
         T object = clazz.getConstructor().newInstance();
 
         Field[] fields = clazz.getDeclaredFields();
 
-        for (Field field:
-             fields) {
-            if (field.isAnnotationPresent(Column.class)) {
-                String setterName = deriveSetterNameFromFieldName(field);
-                Method setterMethod = object.getClass().getMethod(setterName, field.getType());
+        while (resultSet.next()) {
+            for (Field field :
+                    fields) {
+                if (field.isAnnotationPresent(Column.class)) {
+                    String setterName = deriveSetterNameFromFieldName(field);
+                    Method setterMethod = object.getClass().getMethod(setterName, field.getType());
 
-                if (field.getType() == String.class) {
-                    setterMethod.invoke(object, resultSet.getString(field.getName()));
-                }
+                    if (field.getType() == String.class) {
+                        setterMethod.invoke(object, resultSet.getString(field.getName()));
+                    }
 
-                if (field.getType() == Integer.class) {
-                    setterMethod.invoke(object, resultSet.getInt(field.getName()));
-                }
+                    if (field.getType() == Integer.class) {
+                        setterMethod.invoke(object, resultSet.getInt(field.getName()));
+                    }
 
-                if (field.getType() == Long.class) {
-                    setterMethod.invoke(object, resultSet.getLong(field.getName()));
-                }
+                    if (field.getType() == Long.class) {
+                        setterMethod.invoke(object, resultSet.getLong(field.getName()));
+                    }
 
-                if (field.getType() == String.class) {
-                    setterMethod.invoke(object, resultSet.getDouble(field.getName()));
-                }
+                    if (field.getType() == Double.class) {
+                        setterMethod.invoke(object, resultSet.getDouble(field.getName()));
+                    }
 
-                if (field.getType() == Date.class) {
-                    setterMethod.invoke(object, resultSet.getDate(field.getName()));
+                    if (field.getType() == Date.class) {
+                        setterMethod.invoke(object, resultSet.getDate(field.getName()));
+                    }
                 }
             }
         }
-
         return object;
     }
 
@@ -204,26 +168,39 @@ public class PostgreDataBaseService {
 
         return "set" + String.valueOf(fieldName.charAt(0)).toUpperCase() + fieldName.substring(1);
     }
+    private static String deriveGetterNameFromFieldName(Field field) {
+        String fieldName = field.getName();
 
-    private Object[] getValuesArray(Object obj) {
+        return "get" + String.valueOf(fieldName.charAt(0)).toUpperCase() + fieldName.substring(1);
+    }
+
+    private String getValuesLine(Object obj) {
         Field[] fields  = obj.getClass().getDeclaredFields();
 
-        List<Object> list = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder("");
 
         for (Field field:
             fields) {
             if (field.isAnnotationPresent(Column.class)) {
                 try {
-                    list.add(field.get(obj));
-                } catch (IllegalAccessException e) {
+                    Method method = obj.getClass().getMethod(deriveGetterNameFromFieldName(field));
+                    try {
+                        stringBuilder.append("'" + method.invoke(obj) + "'" + ", ");
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
             }
         }
+        stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length() - 1);
+        String valuesLine = String.valueOf(stringBuilder);
 
-        return list.toArray();
+        return valuesLine;
     }
-
 
     private void createId_seqIfNotExists() {
         String sql = String.format(CREATE_ID_SEQ_PATTERN, SEQ_NAME);
@@ -292,6 +269,7 @@ public class PostgreDataBaseService {
         String fields = String.valueOf(createFieldsLine(clazz));
 
         String sql = String.format(CREATE_TABLE_SQL_PATTERN, tableName, idField, SEQ_NAME, fields);
+        System.out.println(sql);
 
         try {
             statement.execute(sql);
@@ -314,7 +292,6 @@ public class PostgreDataBaseService {
         return id;
     }
 
-    //добавить проверку на nullable и unique
     private StringBuilder createFieldsLine(Class<?> clazz) {
         Field[] fields = clazz.getDeclaredFields();
         StringBuilder fieldsLine = new StringBuilder("");
@@ -323,7 +300,10 @@ public class PostgreDataBaseService {
              fields) {
             if (field.isAnnotationPresent(Column.class)) {
 
-                fieldsLine.append(field.getName() + " " +  classToSql.get(field.getType().getName()) + ", ");
+                fieldsLine.append(field.getName() + " " +
+                        classToSql.get(field.getType().getName()) + " " +
+                        checkNullable(field) + " " +
+                        checkUnique(field) + ", ");
             }
         }
 
@@ -332,21 +312,21 @@ public class PostgreDataBaseService {
         return fieldsLine;
     }
 
-//    private String checkNullable(Field field) {
-//        if (field.getAnnotation(Column.class).nullable()) {
-//            return "NOT NULL";
-//        } else {
-//            return "";
-//        }
-//    }
-//
-//    private String checkUnique(Field field) {
-//        if (field.getAnnotation(Column.class).unique()) {
-//            return "UNIQUE";
-//        } else {
-//            return "";
-//        }
-//    }
+    private String checkNullable(Field field) {
+        if (field.getAnnotation(Column.class).nullable()) {
+            return "NOT NULL";
+        } else {
+            return "";
+        }
+    }
+
+    private String checkUnique(Field field) {
+        if (field.getAnnotation(Column.class).unique()) {
+            return "UNIQUE";
+        } else {
+            return "";
+        }
+    }
 
     private void initializeInsertByClassPattern(Set<Class<?>> entities) {
         entities.stream().forEach(x -> putInsertPatternToMap(x));
@@ -355,10 +335,9 @@ public class PostgreDataBaseService {
     private void putInsertPatternToMap(Class<?> clazz) {
         String tableName = clazz.getAnnotation(Table.class).name();
         String insertField = String.valueOf(createFieldsLineForInsert(clazz));
-        String values = String.valueOf(createValuesLineForInsert(clazz));
         String idFieldName = findIdField(clazz);
 
-        String sql = String.format(INSERT_SQL_PATTERN, tableName, insertField, values, idFieldName);
+        String sql = String.format(INSERT_SQL_PATTERN, tableName, insertField, "%s", idFieldName);
 
         insertByClassPattern.put(clazz.getName(), sql);
     }
@@ -371,22 +350,6 @@ public class PostgreDataBaseService {
                 fields) {
             if (field.isAnnotationPresent(Column.class)) {
                 fieldsLine.append(field.getName() + ", ");
-            }
-        }
-
-        fieldsLine.delete(fieldsLine.length() - 2, fieldsLine.length() - 1);
-
-        return fieldsLine;
-    }
-
-    private StringBuilder createValuesLineForInsert(Class<?> clazz) {
-        Field[] fields = clazz.getDeclaredFields();
-        StringBuilder fieldsLine = new StringBuilder("");
-
-        for (Field field:
-                fields) {
-            if (field.isAnnotationPresent(Column.class)) {
-                fieldsLine.append(insertPatternByClass.get(String.valueOf(field.getType())) + ", ");
             }
         }
 
