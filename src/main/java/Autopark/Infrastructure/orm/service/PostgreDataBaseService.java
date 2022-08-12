@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
-import javax.swing.text.html.Option;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -30,9 +29,12 @@ public class PostgreDataBaseService {
     @Autowired
     private Context context;
 
-    private Map<String, String> classToSql;
-    private Map<String, String> insertPatternByClass;
-    private Map<String, String> insertByClassPattern;
+    private Connection connection;
+    private Statement statement;
+
+    private Map<String, String> classToSql = new HashMap<>();
+    private Map<String, String> insertPatternByClass = new HashMap<>();
+    private Map<String, String> insertByClassPattern = new HashMap<>();
 
     private static final String SEQ_NAME = "id_seq";
     private static final String CHECK_SEQ_SQL_PATTERN =
@@ -42,7 +44,7 @@ public class PostgreDataBaseService {
                     "AND sequence_name = '%s'\n" +
                     ");";
     private static final String CREATE_ID_SEQ_PATTERN =
-            "CREATE SEQUENCE %S\n" +
+            "CREATE SEQUENCE IF NOT EXISTS %S\n" +
                     "INCREMENT 1\n" +
                     "START 1;";
     private static final String CHECK_TABLE_SQL_PATTERN =
@@ -52,8 +54,8 @@ public class PostgreDataBaseService {
                     "AND table_name = '%s'\n" +
                     ");";
     private static final String CREATE_TABLE_SQL_PATTERN =
-            "CREATE TABLE %s (\n" +
-                    "%s integer PRIMARY KEY DEFAULT nextval('%s')" +
+            "CREATE TABLE IF NOT EXISTS %s (\n" +
+                    "%s integer PRIMARY KEY DEFAULT nextval('%s'), " +
                     "%S\n);";
     private static final String INSERT_SQL_PATTERN =
             "INSERT INTO %s(%s)\n" +
@@ -65,22 +67,41 @@ public class PostgreDataBaseService {
 
     @InitMethod
     public void init() {
-        Arrays.stream(SqlFieldType.values())
-                .forEach(x -> classToSql.put(String.valueOf(x.getType()), x.getSqlType()));
-        Arrays.stream(SqlFieldType.values())
-                .forEach(x -> insertPatternByClass.put(String.valueOf(x.getType()), x.getInsertPattern()));
-
-        if (!checkId_seq()) {
-            createId_seq();
+        connection = connectionFactory.getConnection();
+        try {
+            statement = connection.createStatement();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+
+        SqlFieldType[] sqlFieldTypes = SqlFieldType.values();
+
+        for (SqlFieldType s:
+             sqlFieldTypes) {
+            classToSql.put(s.getType().getName(), s.getSqlType());
+        }
+
+        for (SqlFieldType s:
+                sqlFieldTypes) {
+            insertPatternByClass.put(s.getType().getName(), s.getInsertPattern());
+        }
+
+        createId_seqIfNotExists();
 
         Set<Class<?>> entities =
                 context.getConfig().getScanner().getReflections().getTypesAnnotatedWith(Table.class);
 
         validateEntities(entities);
-        checkIfTablesExistsAndCreate(entities);
+        createTablesIfNotExists(entities);
 
         initializeInsertByClassPattern(entities);
+
+        try {
+            connection.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //return - это заглушка
@@ -89,11 +110,8 @@ public class PostgreDataBaseService {
 
         String sql = String.format(insertByClassPattern.get(obj.getClass().getName()), values);
 
-        Connection connection = connectionFactory.getConnection();
-
-        Statement statement = null;
         try {
-            statement = connection.createStatement();
+
             statement.executeUpdate(sql);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -119,12 +137,8 @@ public class PostgreDataBaseService {
         String sql = "SELECT * FROM " + clazz.getAnnotation(Table.class).name() +
                 " WHERE " + findIdField(clazz) + " = " + id;
 
-        Connection connection = connectionFactory.getConnection();
-
-        Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = connection.createStatement();
             resultSet = statement.executeQuery(sql);
             optional = Optional.of(makeObject(resultSet, clazz));
 
@@ -210,50 +224,12 @@ public class PostgreDataBaseService {
         return list.toArray();
     }
 
-    private boolean checkId_seq() {
-        String sql = String.format(CHECK_SEQ_SQL_PATTERN, SEQ_NAME);
 
-        Connection connection = connectionFactory.getConnection();
-
-        Statement statement = null;
-        ResultSet resultSet = null;
-        boolean ifExists = false;
-        try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sql);
-            ifExists = resultSet.getBoolean("exists");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            resultSet.close();
-            statement.close();
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return ifExists;
-    }
-
-    private void createId_seq() {
+    private void createId_seqIfNotExists() {
         String sql = String.format(CREATE_ID_SEQ_PATTERN, SEQ_NAME);
 
-        Connection connection = connectionFactory.getConnection();
-
-        Statement statement = null;
         try {
-            statement = connection.createStatement();
             statement.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            statement.close();
-            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -297,48 +273,17 @@ public class PostgreDataBaseService {
                 throw new RuntimeException("There is primitive data type field " + field + " in class " + clazz.getName());
             }
 
-            if (!field.getAnnotation(Column.class).unique()) {
-                throw new RuntimeException("Field " + field + " in class " + clazz.getName() + " isn't unique");
-            }
+//            if (!field.getAnnotation(Column.class).unique()) {
+//                throw new RuntimeException("Field " + field + " in class " + clazz.getName() + " isn't unique");
+//            }
         }
     }
 
-    private void checkIfTablesExistsAndCreate(Set<Class<?>> entities) {
-        for (Class clazz:
-             entities) {
-            if (!checkIfTableExists(clazz)) {
-                createTable(clazz);
-            }
+    private void createTablesIfNotExists(Set<Class<?>> entities) {
+        for (Class clazz :
+                entities) {
+            createTable(clazz);
         }
-    }
-
-    private boolean checkIfTableExists(Class<?> clazz) {
-        String tableName = clazz.getAnnotation(Table.class).name();
-        String sql = String.format(CHECK_TABLE_SQL_PATTERN, tableName);
-
-        Connection connection = connectionFactory.getConnection();
-
-        Statement statement = null;
-        ResultSet resultSet = null;
-        boolean ifExists = false;
-        try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sql);
-            ifExists = resultSet.getBoolean("exists");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            resultSet.close();
-            statement.close();
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return ifExists;
     }
 
     private void createTable(Class<?> clazz) {
@@ -348,20 +293,8 @@ public class PostgreDataBaseService {
 
         String sql = String.format(CREATE_TABLE_SQL_PATTERN, tableName, idField, SEQ_NAME, fields);
 
-        Connection connection = connectionFactory.getConnection();
-
-        Statement statement = null;
-
         try {
-            statement = connection.createStatement();
             statement.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            statement.close();
-            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -389,7 +322,8 @@ public class PostgreDataBaseService {
         for (Field field:
              fields) {
             if (field.isAnnotationPresent(Column.class)) {
-                fieldsLine.append(field.getName() + " " +  classToSql.get(field.getType()) + ", ");
+
+                fieldsLine.append(field.getName() + " " +  classToSql.get(field.getType().getName()) + ", ");
             }
         }
 
