@@ -4,11 +4,9 @@ import Autopark.Infrastructure.core.impl.ApplicationContext;
 import Autopark.Service.BadMechanicService;
 import Autopark.Service.Fixer;
 import Autopark.Service.Workroom;
-import Autopark.Vehicle.Vehicle;
 import Autopark.VehicleCollections.VehicleCollection;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Main {
@@ -20,7 +18,5 @@ public class Main {
         VehicleCollection vehicleCollection = applicationContext.getObject(VehicleCollection.class);
         Workroom workroom = applicationContext.getObject(Workroom.class);
 
-        List<Vehicle> vehicleList = vehicleCollection.getVehicleList();
-        workroom.checkAllVehicle(vehicleList);
     }
 }
