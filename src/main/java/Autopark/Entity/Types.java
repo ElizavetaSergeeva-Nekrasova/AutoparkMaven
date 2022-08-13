@@ -15,9 +15,9 @@ public class Types {
     @ID
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
 
-    @Column(name = "coefTaxes")
+    @Column(name = "coefTaxes", unique = true)
     private Double coefTaxes;
 }

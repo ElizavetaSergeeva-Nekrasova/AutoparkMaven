@@ -19,6 +19,7 @@ public class Main {
         Types type = new Types(Long.valueOf(1), "unknown", 1.2);
         typesService.save(type);
         Types typeFromTable = typesService.get(17L);
-        System.out.println(typeFromTable);
+        Types typeFromTable2 = typesService.get(15L);
+        System.out.println(typeFromTable2);
     }
 }

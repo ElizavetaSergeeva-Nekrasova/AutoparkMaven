@@ -1,5 +1,6 @@
 package Autopark.Infrastructure.orm.service;
 
+import Autopark.Infrastructure.StringUtils;
 import Autopark.Infrastructure.core.Context;
 import Autopark.Infrastructure.core.annotations.Autowired;
 import Autopark.Infrastructure.core.annotations.InitMethod;
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import java.io.FileReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,7 +25,7 @@ import java.util.*;
 
 @Setter
 @Getter
-public class PostgreDataBaseService {
+public class PostgresDataBaseService {
     @Autowired
     private ConnectionFactory connectionFactory;
 
@@ -51,7 +53,7 @@ public class PostgreDataBaseService {
                     "VALUES (%s)\n" +
                     "RETURNING %s ;";
 
-    public PostgreDataBaseService() {
+    public PostgresDataBaseService() {
     }
 
     @InitMethod
@@ -124,7 +126,6 @@ public class PostgreDataBaseService {
         return new ArrayList<>();
     }
 
-    //добавить добавление id
     @SneakyThrows
     private <T> T makeObject(ResultSet resultSet, Class<T> clazz) {
         T object = clazz.getConstructor().newInstance();
@@ -134,44 +135,37 @@ public class PostgreDataBaseService {
         while (resultSet.next()) {
             for (Field field :
                     fields) {
-                if (field.isAnnotationPresent(Column.class)) {
-                    String setterName = deriveSetterNameFromFieldName(field);
+                if (field.isAnnotationPresent(Column.class) || field.isAnnotationPresent(ID.class)) {
+                    String setterName = StringUtils.deriveSetterNameFromFieldName(field);
                     Method setterMethod = object.getClass().getMethod(setterName, field.getType());
-
-                    if (field.getType() == String.class) {
-                        setterMethod.invoke(object, resultSet.getString(field.getName()));
-                    }
-
-                    if (field.getType() == Integer.class) {
-                        setterMethod.invoke(object, resultSet.getInt(field.getName()));
-                    }
-
-                    if (field.getType() == Long.class) {
-                        setterMethod.invoke(object, resultSet.getLong(field.getName()));
-                    }
-
-                    if (field.getType() == Double.class) {
-                        setterMethod.invoke(object, resultSet.getDouble(field.getName()));
-                    }
-
-                    if (field.getType() == Date.class) {
-                        setterMethod.invoke(object, resultSet.getDate(field.getName()));
-                    }
+                    invokeSetterMethodByFieldType(setterMethod, field, object, resultSet);
                 }
             }
         }
         return object;
     }
 
-    private static String deriveSetterNameFromFieldName(Field field) {
-        String fieldName = field.getName();
+    @SneakyThrows
+    private void invokeSetterMethodByFieldType(Method setterMethod, Field field, Object object, ResultSet resultSet) {
+        if (field.getType() == String.class) {
+            setterMethod.invoke(object, resultSet.getString(field.getName()));
+        }
 
-        return "set" + String.valueOf(fieldName.charAt(0)).toUpperCase() + fieldName.substring(1);
-    }
-    private static String deriveGetterNameFromFieldName(Field field) {
-        String fieldName = field.getName();
+        if (field.getType() == Integer.class) {
+            setterMethod.invoke(object, resultSet.getInt(field.getName()));
+        }
 
-        return "get" + String.valueOf(fieldName.charAt(0)).toUpperCase() + fieldName.substring(1);
+        if (field.getType() == Long.class) {
+            setterMethod.invoke(object, resultSet.getLong(field.getName()));
+        }
+
+        if (field.getType() == Double.class) {
+            setterMethod.invoke(object, resultSet.getDouble(field.getName()));
+        }
+
+        if (field.getType() == Date.class) {
+            setterMethod.invoke(object, resultSet.getDate(field.getName()));
+        }
     }
 
     private String getValuesLine(Object obj) {
@@ -183,7 +177,7 @@ public class PostgreDataBaseService {
             fields) {
             if (field.isAnnotationPresent(Column.class)) {
                 try {
-                    Method method = obj.getClass().getMethod(deriveGetterNameFromFieldName(field));
+                    Method method = obj.getClass().getMethod(StringUtils.deriveGetterNameFromFieldName(field));
                     try {
                         stringBuilder.append("'" + method.invoke(obj) + "'" + ", ");
                     } catch (IllegalAccessException e) {
@@ -250,9 +244,9 @@ public class PostgreDataBaseService {
                 throw new RuntimeException("There is primitive data type field " + field + " in class " + clazz.getName());
             }
 
-//            if (!field.getAnnotation(Column.class).unique()) {
-//                throw new RuntimeException("Field " + field + " in class " + clazz.getName() + " isn't unique");
-//            }
+            if (field.isAnnotationPresent(Column.class) && !field.getAnnotation(Column.class).unique()) {
+                throw new RuntimeException("Field " + field + " in class " + clazz.getName() + " isn't unique");
+            }
         }
     }
 
@@ -269,7 +263,6 @@ public class PostgreDataBaseService {
         String fields = String.valueOf(createFieldsLine(clazz));
 
         String sql = String.format(CREATE_TABLE_SQL_PATTERN, tableName, idField, SEQ_NAME, fields);
-        System.out.println(sql);
 
         try {
             statement.execute(sql);

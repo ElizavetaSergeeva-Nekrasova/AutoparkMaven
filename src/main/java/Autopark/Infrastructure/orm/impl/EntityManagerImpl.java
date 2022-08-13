@@ -4,7 +4,7 @@ import Autopark.Infrastructure.core.Context;
 import Autopark.Infrastructure.core.annotations.Autowired;
 import Autopark.Infrastructure.orm.ConnectionFactory;
 import Autopark.Infrastructure.orm.EntityManager;
-import Autopark.Infrastructure.orm.service.PostgreDataBaseService;
+import Autopark.Infrastructure.orm.service.PostgresDataBaseService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +18,7 @@ public class EntityManagerImpl implements EntityManager {
     private ConnectionFactory connection;
 
     @Autowired
-    private PostgreDataBaseService dataBaseService;
+    private PostgresDataBaseService dataBaseService;
 
     @Autowired
     Context context;

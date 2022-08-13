@@ -17,12 +17,12 @@ public class Rents {
     @ID
     private Long id;
 
-    @Column(name = "vehicleId")
+    @Column(name = "vehicleId", unique = true)
     private Long vehicleId;
 
-    @Column(name = "date")
+    @Column(name = "date", unique = true)
     private Date date;
 
-    @Column(name = "cost")
+    @Column(name = "cost", unique = true)
     private Double cost;
 }

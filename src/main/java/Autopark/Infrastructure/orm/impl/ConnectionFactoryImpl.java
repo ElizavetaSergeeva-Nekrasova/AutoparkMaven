@@ -13,14 +13,14 @@ import java.sql.DriverManager;
 @Setter
 @Getter
 public class ConnectionFactoryImpl implements ConnectionFactory {
-    //@Property("url")
-    private String url = "jdbc:postgresql://localhost:5432/MyDatabase";
+    @Property("url")
+    private String url;
 
-    //@Property("username")
-    private String username = "postgres";
+    @Property("username")
+    private String username;
 
-    //@Property("password")
-    private String password = "root";
+    @Property("password")
+    private String password;
 
     private Connection connection;
 
