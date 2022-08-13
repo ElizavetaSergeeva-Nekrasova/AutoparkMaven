@@ -2,7 +2,6 @@ package Autopark.EntitiesService;
 
 import Autopark.Entity.Rents;
 import Autopark.Infrastructure.core.annotations.Autowired;
-import Autopark.Infrastructure.core.annotations.InitMethod;
 import Autopark.Infrastructure.orm.EntityManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,19 +14,15 @@ public class RentsService {
     @Autowired
     EntityManager entityManager;
 
-    @InitMethod
-    public void init() {
-    }
-
     public Rents get(Long id) {
-        return null;
+        return entityManager.get(id, Rents.class).orElse(new Rents());
     }
 
     public List<Rents> getAll() {
-        return null;
+        return entityManager.getAll(Rents.class);
     }
 
-    public Long save(Rents rents) {
-        return null;
+    public void save(Rents rents) {
+        entityManager.save(rents);
     }
 }

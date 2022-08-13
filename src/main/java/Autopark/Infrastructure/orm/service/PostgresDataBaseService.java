@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
-import java.io.FileReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -106,8 +105,10 @@ public class PostgresDataBaseService {
         ResultSet resultSet = null;
         try {
             resultSet = statement.executeQuery(sql);
-            optional = Optional.of(makeObject(resultSet, clazz));
 
+            if (resultSet.next()) {
+                optional = Optional.of(makeObject(resultSet, clazz));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -121,9 +122,33 @@ public class PostgresDataBaseService {
         return optional;
     }
 
-    //ЗАГЛУШКА
     public <T> List<T> getAll(Class<T> clazz) {
-        return new ArrayList<>();
+        if (!clazz.isAnnotationPresent(Table.class)) {
+            throw new RuntimeException("This class has no Table annotation");
+        }
+
+        String tableName = clazz.getAnnotation(Table.class).name();
+        String sql = "SELECT * FROM " + tableName;
+        List<T> list = new ArrayList<>();
+
+        ResultSet resultSet = null;
+        try {
+            resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+                list.add(makeObject(resultSet, clazz));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            resultSet.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
     @SneakyThrows
@@ -132,7 +157,6 @@ public class PostgresDataBaseService {
 
         Field[] fields = clazz.getDeclaredFields();
 
-        while (resultSet.next()) {
             for (Field field :
                     fields) {
                 if (field.isAnnotationPresent(Column.class) || field.isAnnotationPresent(ID.class)) {
@@ -141,7 +165,7 @@ public class PostgresDataBaseService {
                     invokeSetterMethodByFieldType(setterMethod, field, object, resultSet);
                 }
             }
-        }
+
         return object;
     }
 
