@@ -7,8 +7,13 @@ import Autopark.Entity.Rents;
 import Autopark.Entity.Types;
 import Autopark.Entity.Vehicles;
 import Autopark.Infrastructure.core.annotations.Autowired;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Getter
+@Setter
 public class ParserVehiclesFromDB {
     @Autowired
     VehiclesService vehiclesService;

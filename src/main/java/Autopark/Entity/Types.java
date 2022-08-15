@@ -32,11 +32,10 @@ public class Types {
 
     public void setName(String name) {
         try {
-            if (TechnicalSpecialist.validateTypeName(name)) {
-                this.name = name;
+            if (!TechnicalSpecialist.validateTypeName(name)) {
+                throw new NotVehicleException("Vehicle type name is wrong" + name);
             }
-
-            throw new NotVehicleException("Vehicle type name is wrong" + name);
+            this.name = name;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
@@ -44,11 +43,10 @@ public class Types {
 
     public void setCoefTaxes(Double coefTaxes) {
         try {
-            if (TechnicalSpecialist.validateCoefTaxes(coefTaxes)) {
-                this.coefTaxes = coefTaxes;
+            if (!TechnicalSpecialist.validateCoefTaxes(coefTaxes)) {
+                throw new NotVehicleException("Vehicle coefTaxes is wrong" + coefTaxes);
             }
-
-            throw new NotVehicleException("Vehicle coefTaxes is wrong" + coefTaxes);
+            this.coefTaxes = coefTaxes;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }

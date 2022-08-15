@@ -4,11 +4,8 @@ import Autopark.Exceptions.NotVehicleException;
 import Autopark.Service.TechnicalSpecialist;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-
 @Getter
 @Setter
-@ToString
 public class CombustionEngine extends AbstractEngine{
     private double engineCapacity;
     
@@ -34,5 +31,10 @@ public class CombustionEngine extends AbstractEngine{
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(" + super.toString() + ", engineCapacity=" + engineCapacity + ")";
     }
 }

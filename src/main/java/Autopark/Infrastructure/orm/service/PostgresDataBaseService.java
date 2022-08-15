@@ -38,14 +38,9 @@ public class PostgresDataBaseService {
     private Map<String, String> insertPatternByClass = new HashMap<>();
     private Map<String, String> insertByClassPattern = new HashMap<>();
 
-    private static final String SEQ_NAME = "id_seq";
-    private static final String CREATE_ID_SEQ_PATTERN =
-            "CREATE SEQUENCE IF NOT EXISTS %S\n" +
-                    "INCREMENT 1\n" +
-                    "START 1;";
     private static final String CREATE_TABLE_SQL_PATTERN =
             "CREATE TABLE IF NOT EXISTS %s (\n" +
-                    "%s integer PRIMARY KEY DEFAULT nextval('%s'), " +
+                    "%s SERIAL PRIMARY KEY, " +
                     "%S\n);";
     private static final String INSERT_SQL_PATTERN =
             "INSERT INTO %s(%s)\n" +
@@ -68,8 +63,6 @@ public class PostgresDataBaseService {
 
         Arrays.stream(sqlFieldTypes).forEach(x -> classToSql.put(x.getType().getName(), x.getSqlType()));
         Arrays.stream(sqlFieldTypes).forEach(x -> insertPatternByClass.put(x.getType().getName(), x.getInsertPattern()));
-
-        createId_seqIfNotExists();
 
         Set<Class<?>> entities =
                 context.getConfig().getScanner().getReflections().getTypesAnnotatedWith(Table.class);
@@ -226,16 +219,6 @@ public class PostgresDataBaseService {
         return valuesLine;
     }
 
-    private void createId_seqIfNotExists() {
-        String sql = String.format(CREATE_ID_SEQ_PATTERN, SEQ_NAME);
-
-        try {
-            statement.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void validateEntities(Set<Class<?>> entities) {
         Iterator setIterator = entities.iterator();
 
@@ -288,7 +271,7 @@ public class PostgresDataBaseService {
         String idField = findIdField(clazz);
         String fields = String.valueOf(createFieldsLine(clazz));
 
-        String sql = String.format(CREATE_TABLE_SQL_PATTERN, tableName, idField, SEQ_NAME, fields);
+        String sql = String.format(CREATE_TABLE_SQL_PATTERN, tableName, idField, fields);
 
         try {
             statement.execute(sql);

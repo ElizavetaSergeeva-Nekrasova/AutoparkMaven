@@ -19,6 +19,7 @@ public class Workroom {
         vehicles
                 .stream()
                 .forEach(vehicle -> {
+                    mechanic.detectBreaking(vehicle);
                     showTechnicalCondition(vehicle);
                 });
 

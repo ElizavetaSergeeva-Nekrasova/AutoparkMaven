@@ -36,11 +36,10 @@ public class Rents {
 
     public void setCost(Double cost) {
         try {
-            if (TechnicalSpecialist.validateCost(cost)) {
-                this.cost = cost;
+            if (!TechnicalSpecialist.validateCost(cost)) {
+                throw new NotVehicleException("Vehicle cost is wrong" + cost);
             }
-
-            throw new NotVehicleException("Vehicle cost is wrong" + cost);
+            this.cost = cost;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }

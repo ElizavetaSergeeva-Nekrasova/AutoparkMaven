@@ -31,22 +31,22 @@ public class Vehicles {
     @Column(name = "typeId")
     private Long typeId;
 
-    @Column(name = "model", unique = true)
+    @Column(name = "model")
     private String model;
 
     @Column(name = "stateNumber", unique = true)
     private String stateNumber;
 
-    @Column(name = "weight", unique = true)
+    @Column(name = "weight")
     private Double weight;
 
-    @Column(name = "year", unique = true)
+    @Column(name = "year")
     private Integer year;
 
-    @Column(name = "mileage", unique = true)
+    @Column(name = "mileage")
     private Integer mileage;
 
-    @Column(name = "color", unique = true)
+    @Column(name = "color")
     private String color;
 
     @Column(name = "engineName")
@@ -58,14 +58,14 @@ public class Vehicles {
     @Column(name = "tankCapacity")
     private Double tankCapacity;
 
-    @Column(name = "engineCapacity", nullable = false)
+    @Column(name = "engineCapacity")
     private Double engineCapacity;
 
     private Startable engine;
 
     private Map<Long, Types> typeIdToType;
 
-    public Vehicles(Long id, Long typeId, String model, String stateNumber, Double weight, Integer year, Integer mileage, String color, String engineName, Double consumptionPerKilometer, Double tankCapacity, Double engineCapacity) {
+    public Vehicles(Long id, Long typeId, String model, String stateNumber, Double weight, Integer year, Integer mileage, String color, String engineName,  Double engineCapacity, Double consumptionPerKilometer, Double tankCapacity) {
         this.id = id;
         this.typeId = typeId;
         setModel(model);
@@ -99,11 +99,10 @@ public class Vehicles {
 
     public void setModel(String model) {
         try {
-            if (TechnicalSpecialist.validateModelName(model)) {
-                this.model = model;
+            if (!TechnicalSpecialist.validateModelName(model)) {
+                throw new NotVehicleException("Vehicle model name is wrong" + model);
             }
-
-            throw new NotVehicleException("Vehicle model name is wrong" + model);
+            this.model = model;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
@@ -111,11 +110,10 @@ public class Vehicles {
 
     public void setStateNumber(String stateNumber) {
         try {
-            if (TechnicalSpecialist.validateRegistrationNumber(stateNumber)) {
-                this.stateNumber = stateNumber;
+            if (!TechnicalSpecialist.validateRegistrationNumber(stateNumber)) {
+                throw new NotVehicleException("Vehicle state number is wrong" + stateNumber);
             }
-
-            throw new NotVehicleException("Vehicle state number is wrong" + stateNumber);
+            this.stateNumber = stateNumber;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
@@ -123,11 +121,10 @@ public class Vehicles {
 
     public void setWeight(Double weight) {
         try {
-            if (TechnicalSpecialist.validateWeight(weight)) {
-                this.weight = weight;
+            if (!TechnicalSpecialist.validateWeight(weight)) {
+                throw new NotVehicleException("Vehicle weight is wrong" + weight);
             }
-
-            throw new NotVehicleException("Vehicle weight is wrong" + weight);
+            this.weight = weight;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
@@ -135,11 +132,10 @@ public class Vehicles {
 
     public void setYear(Integer year) {
         try {
-            if (TechnicalSpecialist.validateManufactureYear(year)) {
-                this.year = year;
+            if (!TechnicalSpecialist.validateManufactureYear(year)) {
+                throw new NotVehicleException("Vehicle year is wrong" + year);
             }
-
-            throw new NotVehicleException("Vehicle year is wrong" + year);
+            this.year = year;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
@@ -147,11 +143,10 @@ public class Vehicles {
 
     public void setMileage(Integer mileage) {
         try {
-            if (TechnicalSpecialist.validateMileage(mileage)) {
-                this.mileage = mileage;
+            if (!TechnicalSpecialist.validateMileage(mileage)) {
+                throw new NotVehicleException("Vehicle mileage wrong" + mileage);
             }
-
-            throw new NotVehicleException("Vehicle mileage wrong" + mileage);
+            this.mileage = mileage;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }
@@ -159,11 +154,10 @@ public class Vehicles {
 
     public void setColor(String color) {
         try {
-            if (TechnicalSpecialist.validateColor(color)) {
-                this.color = color;
+            if (!TechnicalSpecialist.validateColor(color)) {
+                throw new NotVehicleException("Vehicle color is wrong" + color);
             }
-
-            throw new NotVehicleException("Vehicle color is wrong" + color);
+            this.color = color;
         } catch (NotVehicleException e) {
             e.printStackTrace();
         }

@@ -27,4 +27,11 @@ abstract class AbstractEngine implements Startable{
     public double getMaxKilometers() {
         return tankCapacity / consumptionPerKilometer;
     }
+
+    @Override
+    public String toString() {
+        return "taxByEngineType=" + taxByEngineType +
+                ", consumptionPerKilometer=" + consumptionPerKilometer +
+                ", tankCapacity" + tankCapacity;
+    }
 }
