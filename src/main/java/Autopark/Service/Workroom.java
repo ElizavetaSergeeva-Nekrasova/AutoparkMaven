@@ -1,26 +1,21 @@
 package Autopark.Service;
 
+import Autopark.Entity.Vehicles;
 import Autopark.Infrastructure.core.annotations.Autowired;
-import Autopark.Vehicle.Vehicle;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Workroom {
     @Autowired
     private Fixer mechanic;
 
-    public Workroom() {
-    }
-
-    public Fixer getMechanic() {
-        return mechanic;
-    }
-
-    public void setMechanic(Fixer mechanic) {
-        this.mechanic = mechanic;
-    }
-
-    public void checkAllVehicle(List<Vehicle> vehicles) {
+    public void checkAllVehicle(List<Vehicles> vehicles) {
         vehicles
                 .stream()
                 .forEach(vehicle -> {
@@ -30,12 +25,12 @@ public class Workroom {
         System.out.println("Теперь все транспортные средства исправны");
     }
 
-    private void showTechnicalCondition(Vehicle vehicle) {
-        if (!mechanic.isBroken(vehicle)) {
-            System.out.println("Auto " + vehicle.getId() + " исправно");
+    private void showTechnicalCondition(Vehicles vehicles) {
+        if (!mechanic.isBroken(vehicles)) {
+            System.out.println("Auto " + vehicles.getId() + " исправно");
         } else {
-            System.out.println("Auto " + vehicle.getId() + " неисправно, чиним...");
-            mechanic.repair(vehicle);
+            System.out.println("Auto " + vehicles.getId() + " неисправно, чиним...");
+            mechanic.repair(vehicles);
         }
     }
 }

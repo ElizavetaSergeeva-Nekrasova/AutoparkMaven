@@ -157,14 +157,20 @@ public class PostgresDataBaseService {
 
         Field[] fields = clazz.getDeclaredFields();
 
-            for (Field field :
-                    fields) {
-                if (field.isAnnotationPresent(Column.class) || field.isAnnotationPresent(ID.class)) {
-                    String setterName = StringUtils.deriveSetterNameFromFieldName(field);
-                    Method setterMethod = object.getClass().getMethod(setterName, field.getType());
-                    invokeSetterMethodByFieldType(setterMethod, field, object, resultSet);
-                }
+        for (Field field :
+                fields) {
+            if (field.isAnnotationPresent(Column.class) || field.isAnnotationPresent(ID.class)) {
+                String setterName = StringUtils.deriveSetterNameFromFieldName(field);
+                Method setterMethod = object.getClass().getMethod(setterName, field.getType());
+                invokeSetterMethodByFieldType(setterMethod, field, object, resultSet);
             }
+        }
+
+        for (Method method: clazz.getMethods()) {
+            if (method.isAnnotationPresent(InitMethod.class)) {
+                method.invoke(object);
+            }
+        }
 
         return object;
     }
@@ -193,12 +199,12 @@ public class PostgresDataBaseService {
     }
 
     private String getValuesLine(Object obj) {
-        Field[] fields  = obj.getClass().getDeclaredFields();
+        Field[] fields = obj.getClass().getDeclaredFields();
 
         StringBuilder stringBuilder = new StringBuilder("");
 
-        for (Field field:
-            fields) {
+        for (Field field :
+                fields) {
             if (field.isAnnotationPresent(Column.class)) {
                 try {
                     Method method = obj.getClass().getMethod(StringUtils.deriveGetterNameFromFieldName(field));
@@ -247,8 +253,8 @@ public class PostgresDataBaseService {
     private void checkIfExistsLongFieldWithIdAnnotation(Class<?> clazz) {
         Field[] fields = clazz.getDeclaredFields();
 
-        for (Field field:
-             fields) {
+        for (Field field :
+                fields) {
             if (field.isAnnotationPresent(ID.class)) {
                 if (field.getType() == Long.class) {
                     return;
@@ -262,7 +268,7 @@ public class PostgresDataBaseService {
     private void checkIfFieldsHaveCorrectColumnNamesAndTypes(Class<?> clazz) {
         Field[] fields = clazz.getDeclaredFields();
 
-        for (Field field:
+        for (Field field :
                 fields) {
             if (field.getType().isPrimitive()) {
                 throw new RuntimeException("There is primitive data type field " + field + " in class " + clazz.getName());
@@ -294,7 +300,7 @@ public class PostgresDataBaseService {
     private String findIdField(Class<?> clazz) {
         Field[] fields = clazz.getDeclaredFields();
         String id = null;
-        for (Field field:
+        for (Field field :
                 fields) {
             if (field.isAnnotationPresent(ID.class)) {
                 id = field.getName();
@@ -309,8 +315,8 @@ public class PostgresDataBaseService {
         Field[] fields = clazz.getDeclaredFields();
         StringBuilder fieldsLine = new StringBuilder("");
 
-        for (Field field:
-             fields) {
+        for (Field field :
+                fields) {
             if (field.isAnnotationPresent(Column.class)) {
 
                 fieldsLine.append(field.getName() + " " +
@@ -359,7 +365,7 @@ public class PostgresDataBaseService {
         Field[] fields = clazz.getDeclaredFields();
         StringBuilder fieldsLine = new StringBuilder("");
 
-        for (Field field:
+        for (Field field :
                 fields) {
             if (field.isAnnotationPresent(Column.class)) {
                 fieldsLine.append(field.getName() + ", ");

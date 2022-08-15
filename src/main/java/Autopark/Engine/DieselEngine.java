@@ -1,4 +1,4 @@
-package Autopark.Vehicle.Engine;
+package Autopark.Engine;
 
 public class DieselEngine extends CombustionEngine{
     private static final String ENGINE_TYPE = "Diesel";

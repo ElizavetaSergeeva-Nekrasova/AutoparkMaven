@@ -1,12 +1,12 @@
 package Autopark.Comparators;
 
-import Autopark.Vehicle.Vehicle;
+import Autopark.Entity.Vehicles;
 
 import java.util.Comparator;
 
-public class ModelComparator implements Comparator<Vehicle> {
+public class ModelComparator implements Comparator<Vehicles> {
     @Override
-    public int compare(Vehicle o1, Vehicle o2) {
+    public int compare(Vehicles o1, Vehicles o2) {
         return o1.getModel().compareTo(o2.getModel());
     }
 }
