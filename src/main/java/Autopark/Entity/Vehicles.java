@@ -16,7 +16,7 @@ public class Vehicles {
     @ID
     private Long id;
 
-    @Column(name = "typeId", unique = true)
+    @Column(name = "typeId")
     private Integer typeId;
 
     @Column(name = "model", unique = true)
@@ -37,6 +37,6 @@ public class Vehicles {
     @Column(name = "color", unique = true)
     private String color;
 
-    @Column(name = "engineType", unique = true)
+    @Column(name = "engineType")
     private String engineType;
 }

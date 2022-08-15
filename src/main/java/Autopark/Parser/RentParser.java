@@ -1,5 +1,6 @@
 package Autopark.Parser;
 
+import Autopark.DateUtils.DateUtils;
 import Autopark.FileUtils.FileUtils;
 import Autopark.Rent.Rent;
 
@@ -28,7 +29,7 @@ public class RentParser {
 
         Rent rent = new Rent(
                 Integer.parseInt(fields[0]),
-                ParserStringFormatter.formatStringToDate(fields[1]),
+                DateUtils.formatStringToDate(fields[1]),
                 Double.parseDouble(fields[2])
         );
 

@@ -5,7 +5,7 @@ import Autopark.Infrastructure.orm.annotations.ID;
 import Autopark.Infrastructure.orm.annotations.Table;
 import lombok.*;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Table(name = "Rents")
 @Builder
@@ -17,12 +17,12 @@ public class Rents {
     @ID
     private Long id;
 
-    @Column(name = "vehicleId", unique = true)
+    @Column(name = "vehicleId")
     private Long vehicleId;
 
-    @Column(name = "date", unique = true)
+    @Column(name = "date")
     private Date date;
 
-    @Column(name = "cost", unique = true)
+    @Column(name = "cost")
     private Double cost;
 }

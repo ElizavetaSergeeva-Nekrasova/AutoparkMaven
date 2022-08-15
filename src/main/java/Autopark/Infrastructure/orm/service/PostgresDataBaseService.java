@@ -267,10 +267,6 @@ public class PostgresDataBaseService {
             if (field.getType().isPrimitive()) {
                 throw new RuntimeException("There is primitive data type field " + field + " in class " + clazz.getName());
             }
-
-            if (field.isAnnotationPresent(Column.class) && !field.getAnnotation(Column.class).unique()) {
-                throw new RuntimeException("Field " + field + " in class " + clazz.getName() + " isn't unique");
-            }
         }
     }
 
