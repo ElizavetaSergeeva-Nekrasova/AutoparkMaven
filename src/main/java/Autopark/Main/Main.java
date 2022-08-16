@@ -4,6 +4,7 @@ import Autopark.EntityCollection.EntityCollection;
 import Autopark.Infrastructure.core.impl.ApplicationContext;
 import Autopark.Service.Fixer;
 import Autopark.Service.MechanicService;
+import Autopark.Service.ScheduledCheck;
 import Autopark.Service.Workroom;
 
 import java.util.HashMap;
@@ -16,10 +17,15 @@ public class Main {
         ApplicationContext applicationContext = new ApplicationContext("Autopark", interfaceToImplementation);
 
         EntityCollection entityCollection = applicationContext.getObject(EntityCollection.class);
-        System.out.println(entityCollection.getVehiclesList());
-        System.out.println(entityCollection.getRentsList());
-        System.out.println(entityCollection.getTypesList());
         Workroom workroom = applicationContext.getObject(Workroom.class);
-        workroom.checkAllVehicle(entityCollection.getVehiclesList());
+        ScheduledCheck scheduledCheck = applicationContext.getObject(ScheduledCheck.class);
+
+        scheduledCheck.scheduledCheck(workroom, entityCollection);
+
+        try {
+            Thread.sleep(120000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
