@@ -1,11 +1,14 @@
 package Autopark.Service;
 
+import Autopark.Entity.Vehicles;
 import Autopark.FileUtils.FileUtils;
 import Autopark.Infrastructure.core.annotations.Autowired;
 import Autopark.Parser.ParserBreakingsFromFile;
 import Autopark.RandomizeUtils.Randomizer;
-import Autopark.Vehicle.Vehicle;
 import Autopark.Comparators.ComparatorByDefectCount;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,36 +17,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Setter
+@Getter
+@NoArgsConstructor
 public class MechanicService implements Fixer {
     private static final String[] DETAILS = {"Фильтр", "Втулка", "Вал", "Ось", "Свеча",  "Масло", "ГРМ", "ШРУС"};
     private static final int NUMBER_OF_DETAILS = 8;
     private static final int MAX_NUMBER_OF_BROKEN_DETAILS = 5;
     private static final int MAX_NUMBER_OF_BREAKS = 5;
+
     List<String> orders;
 
     @Autowired
     private ParserBreakingsFromFile ordersParser;
 
-    public MechanicService() {
-    }
-    public ParserBreakingsFromFile getOrdersParser() {
-        return ordersParser;
-    }
-
-    public void setOrdersParser(ParserBreakingsFromFile ordersParser) {
-        this.ordersParser = ordersParser;
-    }
-
-    public List<String> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(List<String> orders) {
-        this.orders = orders;
-    }
-
     @Override
-    public Map<String, Integer> detectBreaking(Vehicle vehicle) {
+    public Map<String, Integer> detectBreaking(Vehicles vehicles) {
         Map<String, Integer> map = new HashMap<>();
         int numberOfBrokenDetails = Randomizer.getRandomFromZeroToNMinusOne(MAX_NUMBER_OF_BROKEN_DETAILS);
 
@@ -54,14 +43,14 @@ public class MechanicService implements Fixer {
         }
 
         if (!map.isEmpty()) {
-            writeToFile(vehicle, map);
+            writeToFile(vehicles, map);
         }
 
         return map;
     }
 
     @Override
-    public void repair(Vehicle vehicle) {
+    public void repair(Vehicles vehicle) {
         orders = ordersParser.getOrders();
         String regex = vehicle.getId() + ".*";
 
@@ -70,20 +59,20 @@ public class MechanicService implements Fixer {
     }
 
     @Override
-    public boolean isBroken(Vehicle vehicle) {
-        if (getLineFromOrdersFile(vehicle) != null) {
+    public boolean isBroken(Vehicles vehicles) {
+        if (getLineFromOrdersFile(vehicles) != null) {
             return true;
         }
 
         return false;
     }
 
-    public int getSumNumberOfBreaks(Vehicle vehicle) {
+    public int getSumNumberOfBreaks(Vehicles vehicles) {
         int sum = 0;
 
         String regex = "\\s{1}\\d{1}";
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(getLineFromOrdersFile(vehicle));
+        Matcher matcher = pattern.matcher(getLineFromOrdersFile(vehicles));
 
         while (matcher.find()) {
             sum += Integer.parseInt(matcher.group().trim());
@@ -92,14 +81,14 @@ public class MechanicService implements Fixer {
         return sum;
     }
 
-    public List<Vehicle> getBrokenVehicles(List<Vehicle> vehicleList) {
+    public List<Vehicles> getBrokenVehicles(List<Vehicles> vehicleList) {
         return vehicleList
                 .stream()
                 .filter(x -> !this.detectBreaking(x).isEmpty())
                 .collect(Collectors.toList());
     }
 
-    public List<Vehicle> sortByNumberOfBrokenDetails(List<Vehicle> brokenVehicleList) {
+    public List<Vehicles> sortByNumberOfBrokenDetails(List<Vehicles> brokenVehicleList) {
         return brokenVehicleList
                 .stream()
                 .sorted(new ComparatorByDefectCount())
@@ -112,9 +101,9 @@ public class MechanicService implements Fixer {
         map.put(detail, numberOfBreaks);
     }
 
-    private String getLineFromOrdersFile(Vehicle vehicle) {
+    private String getLineFromOrdersFile(Vehicles vehicles) {
         orders = ordersParser.getOrders();
-        String regex = vehicle.getId() + ".*";
+        String regex = vehicles.getId() + ".*";
 
         for (int i = 0; i < orders.size(); i++) {
             if (orders.get(i).matches(regex)) {
@@ -125,14 +114,14 @@ public class MechanicService implements Fixer {
         return null;
     }
 
-    private static void writeToFile(Vehicle vehicle, Map<String, Integer> map) {
-        String line = createBreakLine(vehicle, map);
+    private static void writeToFile(Vehicles vehicles, Map<String, Integer> map) {
+        String line = createBreakLine(vehicles, map);
 
         FileUtils.writeLineToFile(line, "src/main/resources/orders.csv");
     }
 
-    private static String createBreakLine(Vehicle vehicle, Map<String, Integer> map) {
-        String line = String.valueOf(vehicle.getId());
+    private static String createBreakLine(Vehicles vehicles, Map<String, Integer> map) {
+        String line = String.valueOf(vehicles.getId());
 
         for (Map.Entry<String, Integer> entry:
                 map.entrySet()) {

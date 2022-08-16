@@ -1,26 +1,25 @@
 package Autopark.Main;
 
+import Autopark.EntityCollection.EntityCollection;
 import Autopark.Infrastructure.core.impl.ApplicationContext;
-import Autopark.Service.BadMechanicService;
 import Autopark.Service.Fixer;
+import Autopark.Service.MechanicService;
 import Autopark.Service.Workroom;
-import Autopark.Vehicle.Vehicle;
-import Autopark.VehicleCollections.VehicleCollection;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
         Map<Class<?>, Class<?>> interfaceToImplementation = new HashMap<>();
-        interfaceToImplementation.put(Fixer.class, BadMechanicService.class);
+        interfaceToImplementation.put(Fixer.class, MechanicService.class);
         ApplicationContext applicationContext = new ApplicationContext("Autopark", interfaceToImplementation);
 
-        VehicleCollection vehicleCollection = applicationContext.getObject(VehicleCollection.class);
+        EntityCollection entityCollection = applicationContext.getObject(EntityCollection.class);
+        System.out.println(entityCollection.getVehiclesList());
+        System.out.println(entityCollection.getRentsList());
+        System.out.println(entityCollection.getTypesList());
         Workroom workroom = applicationContext.getObject(Workroom.class);
-
-        List<Vehicle> vehicleList = vehicleCollection.getVehicleList();
-        workroom.checkAllVehicle(vehicleList);
+        workroom.checkAllVehicle(entityCollection.getVehiclesList());
     }
 }

@@ -1,4 +1,4 @@
-package Autopark.Vehicle.Engine;
+package Autopark.Engine;
 
 public interface Startable {
     double getTaxPerMonth();

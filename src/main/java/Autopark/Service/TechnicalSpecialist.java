@@ -1,9 +1,5 @@
 package Autopark.Service;
 
-import Autopark.Infrastructure.core.annotations.InitMethod;
-import Autopark.Vehicle.Color;
-import Autopark.Vehicle.VehicleType;
-
 public class TechnicalSpecialist {
     public static final int LOWER_LIMIT_MANUFACTURE_YEAR = 1886;
 
@@ -23,15 +19,16 @@ public class TechnicalSpecialist {
         return weight >= 0;
     }
 
-    static public boolean validateColor(Color color) {
+    static public boolean validateColor(String color) {
         return color != null;
     }
 
-    static public boolean validateVehicleType(VehicleType vehicleType) {
-        return vehicleType != null
-                && vehicleType.getTaxCoefficient() >= 0.0d
-                && vehicleType.getTypeName() != null
-                && !vehicleType.getTypeName().isEmpty();
+    static public boolean validateCoefTaxes(double coefTaxes) {
+        return coefTaxes >= 0.0d;
+    }
+
+    static public boolean validateTypeName(String typeName) {
+        return typeName != null && !typeName.isEmpty();
     }
 
     static public boolean validateRegistrationNumber(String number) {
@@ -44,13 +41,13 @@ public class TechnicalSpecialist {
         return name != null && !name.isEmpty();
     }
 
+    static public boolean validateCost(double cost) {
+        return cost >= 0;
+    }
+
     static public boolean validateEngineCapacity(double engineCapacity) {return engineCapacity > 0;}
 
-    static public boolean validateFuelConsumptionPer100(double fuelConsumptionPer100) {return fuelConsumptionPer100 > 0;}
+    static public boolean validateConsumptionPerKilometer(double consumptionPerKilometer) {return consumptionPerKilometer > 0;}
 
-    static public boolean validateFuelTankCapacity(double fuelTankCapacity) {return fuelTankCapacity > 0;}
-
-    static public boolean validateBatteryCharge(double batteryCharge){return batteryCharge > 0;}
-
-    static public boolean validateElectricityConsumptionPerKilometer(double electricityConsumptionPerKilometer){return electricityConsumptionPerKilometer > 0;}
+    static public boolean validateTankCapacity(double tankCapacity) {return tankCapacity > 0;}
 }

@@ -1,13 +1,13 @@
 package Autopark.Comparators;
 
+import Autopark.Entity.Vehicles;
 import Autopark.Service.MechanicService;
-import Autopark.Vehicle.Vehicle;
 
 import java.util.Comparator;
 
-public class ComparatorByDefectCount implements Comparator<Vehicle> {
+public class ComparatorByDefectCount implements Comparator<Vehicles> {
     @Override
-    public int compare(Vehicle o1, Vehicle o2) {
+    public int compare(Vehicles o1, Vehicles o2) {
         MechanicService mechanicService = new MechanicService();
         return Integer.compare(mechanicService.getSumNumberOfBreaks(o2), mechanicService.getSumNumberOfBreaks(o1));
     }
