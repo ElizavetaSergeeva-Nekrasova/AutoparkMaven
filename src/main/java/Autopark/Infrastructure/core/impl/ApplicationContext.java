@@ -13,11 +13,25 @@ public class ApplicationContext implements Context {
     private final Cache cache;
     private final ObjectFactory factory;
 
-    public ApplicationContext(String packageToScan, Map<Class<?>, Class<?>> interfaceToImplementation) {
+    private volatile static ApplicationContext applicationContext;
+
+    private ApplicationContext(String packageToScan, Map<Class<?>, Class<?>> interfaceToImplementation) {
         this.config = new JavaConfig(new ScannerImpl(packageToScan), interfaceToImplementation);
         this.cache = new CacheImpl();
         cache.put(Context.class, this);
         this.factory = new ObjectFactoryImpl(this);
+    }
+
+    public static ApplicationContext getInstance(String packageToScan, Map<Class<?>, Class<?>> interfaceToImplementation) {
+        if (applicationContext == null) {
+            synchronized (ApplicationContext.class) {
+                if (applicationContext == null) {
+                    applicationContext = new ApplicationContext(packageToScan, interfaceToImplementation);
+                }
+            }
+        }
+
+        return applicationContext;
     }
 
     @Override

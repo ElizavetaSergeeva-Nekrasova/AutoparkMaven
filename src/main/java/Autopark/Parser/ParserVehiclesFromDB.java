@@ -8,12 +8,14 @@ import Autopark.Entity.Types;
 import Autopark.Entity.Vehicles;
 import Autopark.Infrastructure.core.annotations.Autowired;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class ParserVehiclesFromDB {
     @Autowired
     VehiclesService vehiclesService;
@@ -23,9 +25,6 @@ public class ParserVehiclesFromDB {
 
     @Autowired
     RentsService rentsService;
-
-    public ParserVehiclesFromDB() {
-    }
 
     public List<Types> loadTypesList() {
         return typesService.getAll();

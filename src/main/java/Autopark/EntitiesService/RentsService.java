@@ -4,12 +4,14 @@ import Autopark.Entity.Rents;
 import Autopark.Infrastructure.core.annotations.Autowired;
 import Autopark.Infrastructure.orm.EntityManager;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class RentsService {
     @Autowired
     EntityManager entityManager;

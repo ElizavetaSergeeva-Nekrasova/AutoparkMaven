@@ -10,6 +10,7 @@ import Autopark.Infrastructure.orm.annotations.ID;
 import Autopark.Infrastructure.orm.annotations.Table;
 import Autopark.Infrastructure.orm.enums.SqlFieldType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
@@ -24,6 +25,7 @@ import java.util.*;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class PostgresDataBaseService {
     @Autowired
     private ConnectionFactory connectionFactory;
@@ -46,9 +48,6 @@ public class PostgresDataBaseService {
             "INSERT INTO %s(%s)\n" +
                     "VALUES (%s)\n" +
                     "RETURNING %s ;";
-
-    public PostgresDataBaseService() {
-    }
 
     @InitMethod
     public void init() {
