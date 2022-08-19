@@ -36,6 +36,7 @@ public class ScheduleConfigurator implements ProxyConfigurator {
             thread.start();
             return null;
         }
+
         return methodProxy.invokeSuper(object, args);
     }
 
