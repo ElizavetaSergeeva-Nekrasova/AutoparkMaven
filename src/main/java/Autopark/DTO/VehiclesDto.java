@@ -9,6 +9,7 @@ public class VehiclesDto {
     private Long id;
     private Long typeId;
     private String typeName;
+    private Double coefTaxes;
     private String model;
     private String stateNumber;
     private Double weight;

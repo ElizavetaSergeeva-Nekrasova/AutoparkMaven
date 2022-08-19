@@ -42,6 +42,7 @@ public class DtoService {
                             .id(vehicles.getId())
                             .typeId(vehicles.getTypeId())
                             .typeName(entityCollection.getTypesList().get((int) (vehicles.getTypeId() - 1)).getName())
+                            .coefTaxes(entityCollection.getTypesList().get((int) (vehicles.getTypeId() - 1)).getCoefTaxes())
                             .model(vehicles.getModel())
                             .stateNumber(vehicles.getStateNumber())
                             .weight(vehicles.getWeight())
