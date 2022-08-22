@@ -42,9 +42,9 @@
             %>
             <%for (VehiclesDto vehiclesDto : carsDtoList) {
                 if (brokenCars.contains(vehiclesDto.getId())) {
-                    broken = "да";
-                } else {
                     broken = "нет";
+                } else {
+                    broken = "да";
                 }
             %>
             <tr>
