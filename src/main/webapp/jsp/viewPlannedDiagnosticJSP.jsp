@@ -15,7 +15,7 @@
     <link rel = stylesheet href = "../resources/css/style.css" />
 </head>
 <body>
-<div class = "center flex full-vh">
+<div class = "center-flex-full-vh">
     <div class="vertical-center">
         <a class="ml-20" href="/">На главную</a>
         <br />
