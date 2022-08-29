@@ -4,6 +4,7 @@ import Autopark.Infrastructure.core.annotations.InitMethod;
 import Autopark.Infrastructure.core.annotations.Property;
 import Autopark.Infrastructure.orm.ConnectionFactory;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
@@ -12,6 +13,7 @@ import java.sql.DriverManager;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class ConnectionFactoryImpl implements ConnectionFactory {
     @Property("url")
     private String url;
@@ -24,12 +26,10 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
     private Connection connection;
 
-    public ConnectionFactoryImpl() {
-    }
-
     @SneakyThrows
     @InitMethod
-    public void initConnection() {
+    public void init() {
+        Class.forName("org.postgresql.Driver");
         connection = DriverManager.getConnection(url, username, password);
     }
 

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -14,6 +15,22 @@ import java.util.List;
 public class Workroom {
     @Autowired
     private Fixer mechanic;
+
+    public List<Long> getRepairedVehiclesId(List<Vehicles> vehicles) {
+        List<Long> list = new ArrayList<>();
+
+        vehicles
+                .stream()
+                .forEach(vehicle -> {
+                    mechanic.detectBreaking(vehicle);
+                    if (mechanic.isBroken(vehicle)) {
+                        list.add(vehicle.getId());
+                        mechanic.repair(vehicle);
+                    }
+                });
+
+        return list;
+    }
 
     public void checkAllVehicle(List<Vehicles> vehicles) {
         vehicles

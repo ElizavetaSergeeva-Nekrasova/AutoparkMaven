@@ -10,6 +10,7 @@ import Autopark.Infrastructure.orm.annotations.ID;
 import Autopark.Infrastructure.orm.annotations.Table;
 import Autopark.Infrastructure.orm.enums.SqlFieldType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
@@ -24,6 +25,7 @@ import java.util.*;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class PostgresDataBaseService {
     @Autowired
     private ConnectionFactory connectionFactory;
@@ -37,6 +39,7 @@ public class PostgresDataBaseService {
     private Map<String, String> classToSql = new HashMap<>();
     private Map<String, String> insertPatternByClass = new HashMap<>();
     private Map<String, String> insertByClassPattern = new HashMap<>();
+    private Map<String, String> deleteByClassPattern = new HashMap<>();
 
     private static final String CREATE_TABLE_SQL_PATTERN =
             "CREATE TABLE IF NOT EXISTS %s (\n" +
@@ -46,9 +49,9 @@ public class PostgresDataBaseService {
             "INSERT INTO %s(%s)\n" +
                     "VALUES (%s)\n" +
                     "RETURNING %s ;";
-
-    public PostgresDataBaseService() {
-    }
+    private static final String DELETE_SQL_PATTERN =
+            "DELETE FROM %s\n" +
+                    "WHERE id = %s;";
 
     @InitMethod
     public void init() {
@@ -71,6 +74,7 @@ public class PostgresDataBaseService {
         createTablesIfNotExists(entities);
 
         initializeInsertByClassPattern(entities);
+        initializeDeleteByClassPattern(entities);
     }
 
     public void save(Object obj) {
@@ -166,6 +170,37 @@ public class PostgresDataBaseService {
         }
 
         return object;
+    }
+
+    public void delete(Object obj) {
+        Field[] fields = obj.getClass().getDeclaredFields();
+
+        Long id = null;
+
+        for (Field field :
+                fields) {
+            if (field.isAnnotationPresent(ID.class)) {
+                Method method = null;
+                try {
+                    method = obj.getClass().getMethod(StringUtils.deriveGetterNameFromFieldName(field));
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    id = (Long) method.invoke(obj);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        String sql = String.format(deleteByClassPattern.get(obj.getClass().getName()), id);
+
+        try {
+            statement.execute(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @SneakyThrows
@@ -272,7 +307,6 @@ public class PostgresDataBaseService {
         String fields = String.valueOf(createFieldsLine(clazz));
 
         String sql = String.format(CREATE_TABLE_SQL_PATTERN, tableName, idField, fields);
-
         try {
             statement.execute(sql);
         } catch (SQLException e) {
@@ -342,6 +376,18 @@ public class PostgresDataBaseService {
         String sql = String.format(INSERT_SQL_PATTERN, tableName, insertField, "%s", idFieldName);
 
         insertByClassPattern.put(clazz.getName(), sql);
+    }
+
+    private void initializeDeleteByClassPattern(Set<Class<?>> entities) {
+        entities.stream().forEach(x -> putDeletePatternToMap(x));
+    }
+
+    private void putDeletePatternToMap(Class<?> clazz) {
+        String tableName = clazz.getAnnotation(Table.class).name();
+
+        String sql = String.format(DELETE_SQL_PATTERN, tableName, "%s");
+
+        deleteByClassPattern.put(clazz.getName(), sql);
     }
 
     private StringBuilder createFieldsLineForInsert(Class<?> clazz) {
