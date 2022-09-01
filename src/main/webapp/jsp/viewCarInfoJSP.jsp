@@ -1,7 +1,10 @@
 <%@ page import="Autopark.DTO.VehiclesDto" %>
 <%@ page import="java.util.List" %>
 <%@ page import="Autopark.Entity.Rents" %>
-<%@ page import="Autopark.DTO.RentsDto" %><%--
+<%@ page import="Autopark.DTO.RentsDto" %>
+<%@ page import="java.text.DecimalFormat" %>
+<%@ page import="java.text.DecimalFormatSymbols" %>
+<%@ page import="java.util.Locale" %><%--
   Created by IntelliJ IDEA.
   User: LizaSN
   Date: 18.08.2022
@@ -15,7 +18,7 @@
     <link rel = stylesheet href = "../resources/css/style.css" />
 </head>
 <body>
-<div class = "center flex full-vh">
+<div class = "center-flex-full-vh">
     <div class="vertical-center">
         <a class="ml-20" href="/">На главную</a>
         <a class="ml-20" href="/viewCars">Назад</a>
@@ -55,13 +58,13 @@
                 <td><%=vehiclesDto.getEngineName()%></td>
                 <td><%=vehiclesDto.getMileage()%></td>
                 <td><%=vehiclesDto.getTankCapacity()%></td>
-                <td><%=vehiclesDto.getPer100Kilometers()%></td>
+                <td><%=new DecimalFormat("#0.0",  new DecimalFormatSymbols(Locale.US)).format(vehiclesDto.getPer100Kilometers())%></td>
                 <td><%=vehiclesDto.getCoefTaxes()%></td>
-                <td><%=vehiclesDto.getMaxKilometers()%></td>
+                <td><%=new DecimalFormat("#0.0",  new DecimalFormatSymbols(Locale.US)).format(vehiclesDto.getMaxKilometers())%></td>
             </tr>
         </table>
         <p> Налог за месяц: <strong>
-            <%=vehiclesDto.getTax()%>
+            <%=new DecimalFormat("#0.0",  new DecimalFormatSymbols(Locale.US)).format(vehiclesDto.getTax())%>
         </strong> </p>
         <br />
         <hr />
@@ -81,10 +84,10 @@
             <%}%>
         </table>
         <p> Cумма: <strong>
-            <%=vehiclesDto.getIncome()%>
+            <%=new DecimalFormat("#0.0",  new DecimalFormatSymbols(Locale.US)).format(vehiclesDto.getIncome())%>
         </strong></p>
         <p> Доход: <strong>
-            <%=vehiclesDto.getProfit()%>
+            <%=new DecimalFormat("#0.0",  new DecimalFormatSymbols(Locale.US)).format(vehiclesDto.getProfit())%>
         </strong></p>
     </div>
 </div>

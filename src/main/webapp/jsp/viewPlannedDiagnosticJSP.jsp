@@ -15,7 +15,7 @@
     <link rel = stylesheet href = "../resources/css/style.css" />
 </head>
 <body>
-<div class = "center flex full-vh">
+<div class = "center-flex-full-vh">
     <div class="vertical-center">
         <a class="ml-20" href="/">На главную</a>
         <br />
@@ -44,9 +44,9 @@
             %>
             <%for (VehiclesDto vehiclesDto : carsDtoList) {
                 if (brokenCars.contains(vehiclesDto.getId())) {
-                    broken = "да";
-                } else {
                     broken = "нет";
+                } else {
+                    broken = "да";
                 }
             %>
             <tr>
@@ -68,9 +68,6 @@
         <p> Последняя проверка проведена <strong>
             <%=Randomizer.getRandomFromOneToN(5)%>
         </strong> минут назад</p>
-        <p> Суммарная прибыль автопарка: <strong>
-            <%=request.getAttribute("totalProfit")%>
-        </strong> </p>
         <br />
         <hr />
         <br />

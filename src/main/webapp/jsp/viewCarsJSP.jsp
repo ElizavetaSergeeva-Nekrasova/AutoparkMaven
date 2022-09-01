@@ -18,7 +18,7 @@
     <link rel = stylesheet href = "../resources/css/style.css" />
 </head>
 <body>
-<div class = "center flex full-vh">
+<div class = "center-flex-full-vh">
     <div class="vertical-center">
         <%
             List<VehiclesDto> dtoList = (List<VehiclesDto>) request.getAttribute("cars");
@@ -105,7 +105,7 @@
             <hr />
             <br />
             <form method="get" action="/viewCars" class="flex">
-                <div>
+                <div class="ml-20">
                     <p>Тип</p>
                     <select name="type">
                         <option value=""

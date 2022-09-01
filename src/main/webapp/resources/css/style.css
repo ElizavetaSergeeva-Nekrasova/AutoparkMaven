@@ -7,10 +7,11 @@
 body {
     width: 100%;
     height: 100%;
+    display: flex;
 }
 
 .ml-20 {
-    margin-left: 20px;
+    margin: 15px;
 }
 
 .vertical-center {
@@ -18,8 +19,16 @@ body {
     margin-bottom: auto;
 }
 
+.flex {
+    display: flex;
+}
+
+form div, form button {
+    width: 10%;
+}
+
 table {
-    width: 33%;
+    width: 50%;
     border-collapse: collapse;
     border: 3px solid grey;
 }
@@ -27,4 +36,13 @@ table {
 th, td {
     width: 33%;
     border: 1px solid grey;
+}
+
+.center-flex-full-vh {
+    display: flex;
+    align-items: center;
+}
+
+.center-flex-full-vh a {
+    text-align: center;
 }

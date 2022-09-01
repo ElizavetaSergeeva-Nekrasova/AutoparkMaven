@@ -12,7 +12,7 @@
     <link href = "../resources/css/style.css" rel = stylesheet />
 </head>
 <body>
-<div class="center flex full-vh">
+<div class="center-flex-full-vh">
     <a class="ml-20 vertical-center" href = "/viewTypes">
         Просмотр всех типов машин
     </a>
